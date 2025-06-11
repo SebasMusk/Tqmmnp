@@ -28,7 +28,7 @@ def draw_from_json(json_file):
     center_x = (min_x + max_x) / 2
     center_y = (min_y + max_y) / 2
 
-    update_every_n_lines = 10  
+    update_every_n_lines = 600  # Más líneas entre updates = más velocidad
 
     for region in regions:
         color = '#{:02x}{:02x}{:02x}'.format(
@@ -38,11 +38,12 @@ def draw_from_json(json_file):
         )
         t.color(color, color)
 
-        points = region['contour']
+        points = region['contour'][::1]  # Puedes probar [::2] si quieres aún más velocidad
+
         if not points:
             continue
 
-        t.begin_fill()
+        # t.begin_fill()  # puedes comentar esto si relleno no es esencial
         t.penup()
 
         x = (points[0][0] - center_x) * scale
@@ -58,11 +59,9 @@ def draw_from_json(json_file):
             if i % update_every_n_lines == 0:
                 screen.update()
 
-        # Cierra forma y termina relleno
-        t.goto((points[0][0] - center_x) * scale,
-               (center_y - points[0][1]) * scale)
-        t.end_fill()
-        screen.update()  # asegurar que el relleno se vea al instante
+        t.penup()
+        # t.end_fill()
+        screen.update()  # asegúrate de ver cada región
 
     screen.update()
     screen.mainloop()
