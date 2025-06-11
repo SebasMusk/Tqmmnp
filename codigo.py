@@ -2,7 +2,6 @@ import turtle
 import json
 
 def draw_from_json(json_file):
-    # Configurar turtle
     screen = turtle.Screen()
     screen.bgcolor("black")
     screen.setup(800, 800)
@@ -13,27 +12,25 @@ def draw_from_json(json_file):
     t.speed(0)
     t.penup()
 
-    # Cargar regiones
     with open(json_file) as f:
         regions = json.load(f)
 
-    # Calcular límites para centrar el dibujo
+    # Calcular límites para centrar
     all_points = [(p[0], p[1]) for r in regions for p in r['contour']]
     min_x = min(p[0] for p in all_points)
     max_x = max(p[0] for p in all_points)
     min_y = min(p[1] for p in all_points)
     max_y = max(p[1] for p in all_points)
 
-    # Calcular escala y centro
     width = max_x - min_x
     height = max_y - min_y
     scale = min(600 / width, 600 / height)
     center_x = (min_x + max_x) / 2
     center_y = (min_y + max_y) / 2
 
-    # Dibujar cada región
-    for i, region in enumerate(regions):
-        # Configurar color
+    update_every_n_lines = 10  
+
+    for region in regions:
         color = '#{:02x}{:02x}{:02x}'.format(
             int(region['color'][0] * 255),
             int(region['color'][1] * 255),
@@ -41,7 +38,6 @@ def draw_from_json(json_file):
         )
         t.color(color, color)
 
-        # Dibujar contorno
         points = region['contour']
         if not points:
             continue
@@ -54,21 +50,20 @@ def draw_from_json(json_file):
         t.goto(x, y)
         t.pendown()
 
-        for point in points[1:]:
+        for i, point in enumerate(points[1:], start=1):
             x = (point[0] - center_x) * scale
             y = (center_y - point[1]) * scale
             t.goto(x, y)
 
+            if i % update_every_n_lines == 0:
+                screen.update()
+
+        # Cierra forma y termina relleno
         t.goto((points[0][0] - center_x) * scale,
                (center_y - points[0][1]) * scale)
         t.end_fill()
-        t.penup()
+        screen.update()  # asegurar que el relleno se vea al instante
 
-        # 🔁 Refrescar cada 50 regiones
-        if i % 50 == 0:
-            screen.update()
-
-    # Refrescar lo que queda al final
     screen.update()
     screen.mainloop()
 
